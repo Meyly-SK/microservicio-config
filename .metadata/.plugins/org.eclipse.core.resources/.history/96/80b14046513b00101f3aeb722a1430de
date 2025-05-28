@@ -1,0 +1,118 @@
+package com.example.microservicio_compra.controller;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.example.commons.controller.CommonController;
+import com.example.commons.exceptions.BadRequestException;
+import com.example.commons.exceptions.NotFoundException;
+import com.example.microservicio_compra.models.Compra;
+import com.example.microservicio_compra.models.DetalleCompra;
+import com.example.microservicio_compra.models.MovimientoInventario;
+import com.example.microservicio_compra.models.Producto;
+import com.example.microservicio_compra.service.CompraService;
+import com.example.microservicio_compra.service.DetalleCompraService;
+
+import jakarta.ws.rs.core.HttpHeaders;
+
+@RestController
+public class CompraController extends CommonController<Compra, CompraService>{
+
+	@Autowired
+	private DetalleCompraService detalleCompraService;
+	
+	@PostMapping("/nuevo")
+	public ResponseEntity<?> nuevaCompra(@RequestBody Compra compraRequest) {
+	    try {
+	        
+	        if(compraRequest.getProveedor() == null) {
+	        	throw new BadRequestException("El proveedor es obligatorio");
+	        }
+	        
+	        if(compraRequest.getDetalles() == null || compraRequest.getDetalles().isEmpty()) {
+	        	throw new BadRequestException("Debe incluir al menos un detalle en la compra");
+	        }
+	        
+	        double totalAcumulado = 0.0;
+	        Compra compra = new Compra();
+	        compra.setProveedor(compraRequest.getProveedor());
+	        compra.setEstado(compraRequest.getEstado());
+	        compra.setFecha(new Date());
+	        List<DetalleCompra> detalleCompras = new ArrayList<>();
+	        for (DetalleCompra item : compraRequest.getDetalles()) {
+	        	
+	            if (item.getProducto() == null || item.getCantidad() == null || item.getCantidad() <= 0) {
+	                throw new BadRequestException("Todos los productos deben tener una cantidad valida y no nula");
+	            }
+	        	Producto producto = detalleCompraService.obtenerInventario(item.getProducto().getId());      	
+	        	if (producto == null) {
+	        		throw new NotFoundException("Producto con ID " + item.getProducto().getId() + " no encontrado.");
+	        	}
+	        	if (producto.getPrecioUnitario() < 0) {
+	        	    return ResponseEntity.badRequest().body("Precio unitario inválido para el producto " + producto.getNombre());
+	        	}	        	
+	        	item.setProducto(producto);	            
+	            item.setCompra(compra);
+	            double subTotal = item.getCantidad() * item.getProducto().getPrecioUnitario();
+	            item.setSubTotal(subTotal);
+	            totalAcumulado += subTotal;
+	            detalleCompras.add(item);
+	        }
+
+	        compra.setDetalles(detalleCompras);
+	        compra.setTotal(totalAcumulado);
+	        Compra compraGuardada = service.save(compra);
+	        for (DetalleCompra detalle : compraGuardada.getDetalles()) {
+	        	
+	            MovimientoInventario mInventario = new MovimientoInventario();
+	            mInventario.setProducto(detalle.getProducto());
+	            mInventario.setCantidad(detalle.getCantidad());
+	            mInventario.setTipoMovimiento("ENTRADA");
+	            mInventario.setOrigen("COMPRA");
+	            mInventario.setReferenciaId(compraGuardada.getId());
+	            mInventario.setDescripcion("COMPRA - ID " + compraGuardada.getId());
+
+	            try {
+	                detalleCompraService.guardarInventario(mInventario);
+	            } catch (Exception e) {
+	                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+	                        .body("Error al registrar el movimiento de inventario: " + e.getMessage());
+	            }
+	        }
+
+	        return ResponseEntity.ok("Compra y movimientos guardados exitosamente.");
+
+	    } catch (Exception e) {
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+	                .body("Ocurrió un error inesperado: " + e.getMessage());
+	    }
+	}
+	
+	@GetMapping("/{id}/pdf")
+	public ResponseEntity<byte[]> generarPdfReporte(@PathVariable Long id) throws Exception{
+		Optional<Compra> compra = service.findById(id);
+		
+		if(compra == null) {
+			return ResponseEntity.notFound().build();
+		}
+		
+		byte[] pdf = service.generarPdfCompra(compra.get());
+		
+		return ResponseEntity.ok()
+				.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=venta_" + id + ".pdf")
+				.contentType(MediaType.APPLICATION_PDF)
+				.body(pdf);
+	}
+}

@@ -1,0 +1,77 @@
+package com.example.microservicio_compra.controller;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.example.commons.controller.CommonController;
+import com.example.microservicio_compra.models.Compra;
+import com.example.microservicio_compra.models.DetalleCompra;
+import com.example.microservicio_compra.models.MovimientoInventario;
+import com.example.microservicio_compra.service.CompraService;
+import com.example.microservicio_compra.service.DetalleCompraService;
+
+@RestController
+public class CompraController extends CommonController<Compra, CompraService>{
+
+	@Autowired
+	private DetalleCompraService detalleCompraService;
+	
+	@PostMapping("/nuevo")
+	public ResponseEntity<?> nuevaCompra(@RequestBody Compra compra){
+		
+		double totalAcumulado = 0.0;
+		
+		Compra compra = new Compra();
+		compra.setProveedor(compra.getProveedor());
+		compra.setEstado(compra.getEstado());
+		compra.setFecha(new Date());
+		
+		List<DetalleCompra> detalleCompras = new ArrayList<>();
+		
+		for(DetalleCompra item : compra.getDetalles()) {
+			item.setCompra(oCompra);
+			
+			double subTotal = item.getCantidad() * item.getProducto().getPrecioUnitario();
+			item.setSubTotal(subTotal);
+			
+			totalAcumulado += subTotal;
+			
+			detalleCompras.add(item);
+		}
+		
+		oCompra.setDetalles(detalleCompras);
+		oCompra.setTotal(totalAcumulado);
+		
+		
+		for (DetalleCompra detalles  : oCompra.getDetalles()) {
+			
+			detalles.setSubTotal(detalles.getCantidad() * detalles.getProducto().getPrecioUnitario());
+			
+			DetalleCompra dCompra =  detalleCompraService.save(detalles);
+			
+			MovimientoInventario mInventario = new MovimientoInventario();
+			
+			mInventario.setProducto(dCompra.getProducto());
+			mInventario.setCantidad(dCompra.getCantidad());
+			mInventario.setTipoMovimiento("ENTRADA");
+			mInventario.setOrigen("COMPRA");
+			mInventario.setReferenciaId(dCompra.getId());
+			mInventario.setDescripcion("COMPRA - " + dCompra.getId());
+			
+			detalleCompraService.guardarInventario(mInventario);
+			
+			oCompra.setTotal(oCompra.getTotal() + dCompra.getSubTotal());
+		}
+		
+		service.save(oCompra);
+		
+		return ResponseEntity.ok("Movimiento creado exitosamente");
+	}
+}

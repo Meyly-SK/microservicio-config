@@ -1,0 +1,23 @@
+package com.example.microservicio_compra.service;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.example.commons.service.CommonServiceImpl;
+import com.example.microservicio_compra.clients.MovimientoFeignClient;
+import com.example.microservicio_compra.models.DetalleCompra;
+import com.example.microservicio_compra.models.MovimientoInventario;
+import com.example.microservicio_compra.repository.CompraDetalleRepository;
+
+@Service
+public class DetalleCompraServieImpl extends CommonServiceImpl<DetalleCompra, CompraDetalleRepository> implements DetalleCompraService{
+
+	@Autowired
+	private MovimientoFeignClient client;
+	
+	@Override
+	public MovimientoInventario guardarInventario(MovimientoInventario movimiento) {
+		// TODO Auto-generated method stub
+		return client.guardarInventario(movimiento);
+	}
+
+}

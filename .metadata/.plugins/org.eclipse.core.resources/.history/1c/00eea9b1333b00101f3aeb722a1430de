@@ -1,0 +1,33 @@
+package com.example.commons.exceptions;
+
+import java.time.LocalDateTime;
+import java.util.Date;
+
+public class ErrorResponse {
+
+	private String message;
+	private LocalDateTime tiempo;
+	
+	public ErrorResponse(String message) {
+		this.message = message;
+		this.tiempo = LocalDateTime.now(); 
+	}
+
+	public String getMessage() {
+		return message;
+	}
+
+	public void setMessage(String message) {
+		this.message = message;
+	}
+
+	public LocalDateTime getTiempo() {
+		return tiempo;
+	}
+
+	public void setTiempo(LocalDateTime tiempo) {
+		this.tiempo = tiempo;
+	}
+	
+	
+}

@@ -1,0 +1,210 @@
+package com.example.microservicio_movimiento.controller;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.example.commons.controller.CommonController;
+import com.example.commons.exceptions.BadRequestException;
+import com.example.commons.exceptions.NotFoundException;
+import com.example.commons.exceptions.ReporteExcelException;
+import com.example.commons.exceptions.StockInsuficienteException;
+import com.example.microservicio_movimiento.models.MovimientoInventario;
+import com.example.microservicio_movimiento.models.Producto;
+import com.example.microservicio_movimiento.service.MovimientoInventarioService;
+
+import jakarta.validation.Valid;
+
+@RestController
+public class MovimientoInventarioController extends CommonController<MovimientoInventario, MovimientoInventarioService>{
+
+
+	@PostMapping("/{id}")
+	public ResponseEntity<?> editar(@Valid @RequestBody MovimientoInventario movimientoInventario,BindingResult result ,@PathVariable Long id){
+		
+		if(result.hasErrors()) {
+			return this.validar(result);
+		}
+		
+		MovimientoInventario dbMovimiento = this.service.findById(id)
+				.orElseThrow(() -> new NotFoundException("Movimiento con ID " + id + " no encontrado"));
+		
+		dbMovimiento.setDescripcion(movimientoInventario.getDescripcion());
+		dbMovimiento.setCantidad(movimientoInventario.getCantidad());
+		dbMovimiento.setOrigen(movimientoInventario.getOrigen());
+		dbMovimiento.setProducto(movimientoInventario.getProducto());
+		dbMovimiento.setReferenciaId(movimientoInventario.getReferenciaId());
+		dbMovimiento.setTipoMovimiento(movimientoInventario.getTipoMovimiento());
+		return ResponseEntity.status(HttpStatus.CREATED).body(this.service.save(dbMovimiento));
+	}
+	
+	
+	///Movimiento Inventario Anterior
+	/*
+	@PostMapping("/inventario")
+	public ResponseEntity<?> crearMovimiento (@Valid @RequestBody MovimientoInventario movimiento,BindingResult result){
+		if(result.hasErrors()) {
+			return this.validar(result);
+		}
+		Producto productoDTO = service.obtenerProductoPorId(movimiento.getProducto().getId());
+		
+		if (productoDTO == null) {
+		    throw new NotFoundException("Producto con ID " + movimiento.getProducto().getId() + " no encontrado.");
+		}
+		
+		if("ENTRADA".equals(movimiento.getTipoMovimiento())) {
+			productoDTO.setStockActual(productoDTO.getStockActual() + movimiento.getCantidad());
+		}else if("SALIDA".equals(movimiento.getTipoMovimiento())) {
+			productoDTO.setStockActual(productoDTO.getStockActual() - movimiento.getCantidad());
+			
+			if(productoDTO.getStockActual() < 0) {
+				return ResponseEntity.status(400).body("No hay suficiente stock para realizar la salida");
+			}
+		}else {
+		    return ResponseEntity.status(400).body("Tipo de movimiento no valido");
+		}
+		service.guardarProducto(productoDTO);
+		service.save(movimiento);
+		
+		return ResponseEntity.ok(movimiento);
+	}
+	
+	*/
+	
+	@PostMapping("/inventario")
+	public ResponseEntity<?> crearMovimiento(@Valid @RequestBody MovimientoInventario movimiento, BindingResult result) {
+	    if (result.hasErrors()) {
+	        return this.validar(result);
+	    }
+
+	    Producto productoDTO = service.obtenerProductoPorId(movimiento.getProducto().getId());
+
+	    if (productoDTO == null) {
+	        throw new NotFoundException("Producto con ID " + movimiento.getProducto().getId() + " no encontrado.");
+	    }
+
+	    switch (movimiento.getTipoMovimiento()) {
+	        case "ENTRADA":
+	            productoDTO.setStockActual(productoDTO.getStockActual() + movimiento.getCantidad());
+	            break;
+	        case "SALIDA":
+	            if (productoDTO.getStockActual() < movimiento.getCantidad()) {
+	                throw new StockInsuficienteException("No hay suficiente stock para realizar la salida del producto con ID " + productoDTO.getId());
+	            }
+	            productoDTO.setStockActual(productoDTO.getStockActual() - movimiento.getCantidad());
+	            break;
+	        default:
+	            throw new BadRequestException("Tipo de movimiento no válido: " + movimiento.getTipoMovimiento());
+	    }
+
+	    service.guardarProducto(productoDTO);
+	    service.save(movimiento);
+
+	    return ResponseEntity.ok(movimiento);
+	}
+
+	
+	
+	@GetMapping("/producto/{productoId}")
+	public ResponseEntity<?> verProductoMovimiento(@PathVariable Long productoId){
+		
+		Producto productoDTO = service.obtenerProductoPorId(productoId);
+		
+		if(productoDTO == null) {
+			throw new NotFoundException("Producto con ID " + productoId + " no encontrado");
+		}
+		
+		List<MovimientoInventario> movimientos = service.obtenerMovimientosPorProductoId(productoId);
+		
+		if(movimientos == null || movimientos.isEmpty()) {
+			throw new NotFoundException("No se encontraron movimientos para el producto con ID " + productoId);
+		}
+		
+		Map<String, Object> response = new HashMap<>();
+		response.put("producto", productoDTO);
+		response.put("movimientos", movimientos);
+		return ResponseEntity.ok(response);
+		
+	}
+	
+	@GetMapping("/reporte/{productoId}")
+	public ResponseEntity<byte[]> generarReporteExcel(@PathVariable Long productoId) throws IOException {
+		
+		List<MovimientoInventario> movimientos = service.obtenerMovimientosPorProductoId(productoId);
+		
+		if(movimientos == null || movimientos.isEmpty()) {
+			throw new NotFoundException("No se encontraron movimientos para el producto con ID " + productoId);
+		}
+		
+		try (XSSFWorkbook workbook = new XSSFWorkbook(); ByteArrayOutputStream bos =  new ByteArrayOutputStream()){
+			XSSFSheet sheet = workbook.createSheet("Movimientos");
+			
+			Row header = sheet.createRow(0);
+			header.createCell(0).setCellValue("ID");
+			header.createCell(1).setCellValue("FECHA");
+			header.createCell(2).setCellValue("TIPO");
+			header.createCell(3).setCellValue("CANTIDAD");
+			header.createCell(4).setCellValue("DESCRIPCION");
+			
+			int numeroRow = 1;
+			
+			for (MovimientoInventario m : movimientos) {
+				Row row = sheet.createRow(numeroRow++);
+				row.createCell(0).setCellValue(m.getId());
+				row.createCell(1).setCellValue(m.getFecha().toString());
+				row.createCell(2).setCellValue(m.getTipoMovimiento());
+				row.createCell(3).setCellValue(m.getCantidad());
+				row.createCell(4).setCellValue(m.getDescripcion());
+			}
+			
+			workbook.write(bos);
+			workbook.close();
+			
+			byte[] excelBytes = bos.toByteArray();
+			
+			HttpHeaders headers = new HttpHeaders();
+			headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+			headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=movimientos.xlsx");
+			
+			return new ResponseEntity<>(excelBytes, headers, HttpStatus.OK);	
+		}catch(IOException ex) {
+			throw new ReporteExcelException("Error al generar el archivo Excel : " + ex.getMessage()); 
+		}
+		
+			
+	}
+	
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

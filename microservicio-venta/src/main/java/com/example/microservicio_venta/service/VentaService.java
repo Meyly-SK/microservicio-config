@@ -1,0 +1,9 @@
+package com.example.microservicio_venta.service;
+
+import com.example.commons.service.CommonService;
+import com.example.microservicio_venta.models.Venta;
+
+public interface VentaService extends CommonService<Venta>{
+
+	public byte[] generarPdfVenta(Venta venta) throws Exception;
+}

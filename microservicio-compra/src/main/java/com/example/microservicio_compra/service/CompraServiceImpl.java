@@ -1,0 +1,70 @@
+package com.example.microservicio_compra.service;
+
+import java.io.ByteArrayOutputStream;
+import java.text.SimpleDateFormat;
+
+import org.springframework.stereotype.Service;
+
+import com.example.commons.service.CommonServiceImpl;
+import com.example.microservicio_compra.models.Compra;
+import com.example.microservicio_compra.models.DetalleCompra;
+import com.example.microservicio_compra.models.Producto;
+import com.example.microservicio_compra.models.Proveedor;
+import com.example.microservicio_compra.repository.CompraRepository;
+import com.lowagie.text.Document;
+import com.lowagie.text.Font;
+import com.lowagie.text.Paragraph;
+import com.lowagie.text.pdf.PdfPTable;
+import com.lowagie.text.pdf.PdfWriter;
+
+@Service
+public class CompraServiceImpl extends CommonServiceImpl<Compra, CompraRepository>implements CompraService{
+
+	@Override
+	public byte[] generarPdfCompra(Compra compra) throws Exception {
+		// TODO Auto-generated method stub
+		
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		Document document = new Document();
+		PdfWriter.getInstance(document, baos);
+		
+		document.open();
+		
+		Font tituloFont = new Font(Font.HELVETICA, 18, Font.BOLD);
+		Paragraph titulo = new Paragraph("Factura de Venta", tituloFont);
+		document.add(titulo);
+		document.add(new Paragraph(" "));
+		
+		Proveedor proveedor = compra.getProveedor();
+		document.add(new Paragraph("Proveedor: " + proveedor.getNombre()));
+		document.add(new Paragraph("Telefono: " + proveedor.getTelefono()));
+		document.add(new Paragraph("Email: " + proveedor.getEmail()));
+		document.add(new Paragraph("Direccion: " + proveedor.getDireccion()));
+		document.add(new Paragraph("Fecha: " + new SimpleDateFormat("dd/MM/yyyy HH:mm").format(compra.getFecha())));
+		document.add(new Paragraph("Estado:" + compra.getEstado()));
+		document.add(new Paragraph(""));
+		
+		PdfPTable table = new PdfPTable(4);
+		table.setWidthPercentage(100);
+		table.addCell("Producto");
+		table.addCell("Precio Unitario");
+		table.addCell("Cantidad");
+		table.addCell("Subtotal");
+		
+		for(DetalleCompra detalle : compra.getDetalles()) {
+			Producto p = detalle.getProducto();
+			table.addCell(p.getNombre());
+			table.addCell(String.format("%.2f", p.getPrecioUnitario()));
+			table.addCell(detalle.getCantidad().toString());
+			table.addCell(String.format("%.2f", detalle.getSubTotal()));
+		}
+		document.add(table);
+		
+		document.add(new Paragraph(" "));
+		document.add(new Paragraph("Total : $" + String.format("%.2f", compra.getTotal())));
+		
+		document.close();
+		return baos.toByteArray();
+	}
+
+}

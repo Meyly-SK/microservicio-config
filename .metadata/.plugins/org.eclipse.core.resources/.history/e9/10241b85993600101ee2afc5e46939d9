@@ -1,0 +1,5 @@
+package com.example.microservicio_compra.models;
+
+public class Compra {
+
+}

@@ -1,0 +1,12 @@
+package com.example.microservicio_compra.service;
+
+import org.springframework.stereotype.Service;
+
+import com.example.commons.service.CommonServiceImpl;
+import com.example.microservicio_compra.models.Compra;
+import com.example.microservicio_compra.repository.CompraRepository;
+
+@Service
+public class CompraServiceImpl extends CommonServiceImpl<Compra, CompraRepository>implements CompraService{
+
+}

@@ -1,0 +1,9 @@
+package com.example.microservicio_cliente.service;
+
+import com.example.commons.service.CommonServiceImpl;
+import com.example.microservicio_cliente.models.Cliente;
+import com.example.microservicio_cliente.repository.ClienteRepository;
+
+public class ClienteServiceImpl extends CommonServiceImpl<Cliente, ClienteRepository>{
+
+}

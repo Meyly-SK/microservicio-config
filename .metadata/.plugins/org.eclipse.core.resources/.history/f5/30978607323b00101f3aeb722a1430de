@@ -1,0 +1,19 @@
+package com.example.microservicio_categoria;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.context.annotation.ComponentScan;
+
+@EnableDiscoveryClient
+@SpringBootApplication
+@ComponentScan({"com.example.commons.exceptions"})
+@EntityScan({"com.example.microservicio_categoria.models","com.example.commons.exceptions"})
+public class MicroservicioCategoriaApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(MicroservicioCategoriaApplication.class, args);
+	}
+
+}

@@ -1,0 +1,7 @@
+package com.example.microservicio_compra.service;
+
+import com.example.commons.service.CommonServiceImpl;
+
+public class CompraServiceImpl extends CommonServiceImpl<Compra, CrudRepository<E,Long>>v{
+
+}

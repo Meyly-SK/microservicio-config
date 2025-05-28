@@ -1,0 +1,12 @@
+package com.example.microservicio_cliente.controller;
+
+import org.springframework.web.bind.annotation.RestController;
+
+import com.example.commons.controller.CommonController;
+import com.example.microservicio_cliente.models.Cliente;
+import com.example.microservicio_cliente.service.ClienteService;
+
+@RestController
+public class ClienteController extends CommonController<Cliente, ClienteService>{
+
+}

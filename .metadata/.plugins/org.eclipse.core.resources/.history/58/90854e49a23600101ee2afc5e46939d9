@@ -1,0 +1,22 @@
+package com.example.microservicio_compra.models;
+
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.UUID;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "compra")
+public class Compra {
+
+	private UUID id;
+	
+	private Date fecha;
+	private String estado;
+	
+	private Proveedor proveedor;
+	
+	private BigDecimal total;
+}

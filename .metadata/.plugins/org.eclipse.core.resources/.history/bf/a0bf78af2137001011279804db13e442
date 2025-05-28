@@ -1,0 +1,5 @@
+package com.example.microservicio_venta.clients;
+
+public class Venta {
+
+}

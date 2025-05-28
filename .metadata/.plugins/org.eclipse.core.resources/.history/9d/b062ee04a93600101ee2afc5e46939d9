@@ -1,0 +1,9 @@
+package com.example.microservicio_compra.service;
+
+import com.example.commons.service.CommonServiceImpl;
+import com.example.microservicio_compra.models.DetalleCompra;
+import com.example.microservicio_compra.repository.CompraDetalleRepository;
+
+public class DetalleCompraServieImpl extends CommonServiceImpl<DetalleCompra, CompraDetalleRepository>{
+
+}

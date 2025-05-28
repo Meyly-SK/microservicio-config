@@ -1,0 +1,8 @@
+package com.example.microservicio_compra.clients;
+
+import org.springframework.cloud.openfeign.FeignClient;
+
+@FeignClient(name = "microservicio-producto")
+public interface ProductoFeignClient {
+
+}

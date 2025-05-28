@@ -1,0 +1,9 @@
+package com.example.microservicio_venta.service;
+
+import com.example.commons.service.CommonServiceImpl;
+import com.example.microservicio_venta.models.Venta;
+import com.example.microservicio_venta.repository.VentaRepository;
+
+public class VentaServiceImpl extends CommonServiceImpl<Venta, VentaRepository> implements VentaService{
+
+}

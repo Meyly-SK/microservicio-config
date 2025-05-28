@@ -1,0 +1,39 @@
+package com.example.microservicio_cliente.controller;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.example.commons.controller.CommonController;
+import com.example.commons.exceptions.NotFoundException;
+import com.example.microservicio_cliente.models.Cliente;
+import com.example.microservicio_cliente.service.ClienteService;
+
+import jakarta.validation.Valid;
+
+@RestController
+public class ClienteController extends CommonController<Cliente, ClienteService>{
+
+	@PostMapping("/{id}")
+	public ResponseEntity<?> Editar(@Valid @RequestBody Cliente cliente,BindingResult result, @PathVariable Long id ) {
+		
+		if(result.hasErrors()) {
+			return this.validar(result);
+		}
+		
+		Cliente dbCliente  =  this.service.findById(id)
+				.orElseThrow(() -> new NotFoundException("Cliente con ID " + id + " no encontrado"));
+		
+		dbCliente.setNombre(cliente.getNombre());
+		dbCliente.setDireccion(cliente.getDireccion());
+		dbCliente.setEmail(cliente.getEmail());
+		dbCliente.setTelefono(cliente.getTelefono());
+		
+		return ResponseEntity.status(HttpStatus.CREATED).body(this.service.save(dbCliente));
+	
+	}
+}

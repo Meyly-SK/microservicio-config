@@ -1,0 +1,5 @@
+package com.example.microservicio_cliente.repository;
+
+public interface ClienteRepository {
+
+}

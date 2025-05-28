@@ -1,0 +1,6 @@
+package com.example.microservicio_venta.controller;
+
+@Re
+public class VentaController {
+
+}

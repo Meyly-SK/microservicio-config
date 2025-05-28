@@ -1,0 +1,23 @@
+package com.example.microservicio_venta.models;
+
+import java.util.Date;
+import java.util.List;
+
+import jakarta.persistence.PrePersist;
+
+public class Venta {
+
+	private Long id;
+	private Date fecha;
+	private String estado;
+	private Cliente cliente;
+	
+	private double total;
+	
+	private List<DetalleVenta> detalles;
+	
+	@PrePersist
+	public void prePersist() {
+		this.fecha = new Date();
+	}
+}

@@ -1,0 +1,115 @@
+package com.example.microservicio_producto.controller;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.example.commons.controller.CommonController;
+import com.example.microservicio_producto.models.Categoria;
+import com.example.microservicio_producto.models.Producto;
+import com.example.microservicio_producto.models.Proveedor;
+import com.example.microservicio_producto.service.ProductoService;
+
+import jakarta.validation.Valid;
+import jakarta.ws.rs.NotFoundException;
+
+@RestController
+public class ProductoController extends CommonController<Producto, ProductoService>{
+
+	@PostMapping("/{id}")
+	public ResponseEntity<?> editar(@Valid @RequestBody Producto producto, @PathVariable Long id, BindingResult result){
+		
+		if(result.hasErrors()) {
+			return this.validar(result);
+		}
+		
+		Producto dbProducto = this.service.findById(id)
+				.orElseThrow(() -> new NotFoundException("Producto con ID " + id + " no encontrado"));
+		
+		dbProducto.setNombre(producto.getNombre());
+		dbProducto.setCategoria(producto.getCategoria());
+		dbProducto.setDescripcion(producto.getDescripcion());
+		dbProducto.setPrecioUnitario(producto.getPrecioUnitario());
+		dbProducto.setProveedor(producto.getProveedor());
+		dbProducto.setStockActual(producto.getStockActual());
+		return ResponseEntity.status(HttpStatus.CREATED).body(this.service.save(dbProducto));
+	}
+	
+	@GetMapping("/categoria/{categoriaId}")
+	public ResponseEntity<?> verCategoria(@PathVariable Long categoriaId){
+		
+		Categoria categoria = service.obtenerCategoriaPorId(categoriaId);
+		
+		if(categoria == null) {
+			return ResponseEntity.status(404).body("La categoria no existe.");
+		}
+		List<Producto> o = service.obtenerProductosPorCategoria(categoriaId);
+		
+		Map<String, Object> response = new HashMap<>();
+		response.put("categoria", categoria);
+		response.put("productos", o);
+		return ResponseEntity.ok(response);
+	}
+	
+	@GetMapping("/proveedor/{proveedorId}")
+	public ResponseEntity<?> verProveedor(@PathVariable Long proveedorId){
+		
+		Proveedor proveedorDTO = service.obtenerProveedoraPorId(proveedorId);
+		
+		if(proveedorDTO == null) {
+			return ResponseEntity.status(404).body("El proveedor no existe.");
+		}
+		List<Producto> o = service.obtenerProductosPorCategoria(proveedorId);
+		
+		Map<String, Object> response = new HashMap<>();
+		response.put("proveedor", proveedorDTO);
+		response.put("productos", o);
+		return ResponseEntity.ok(response);
+	}
+	
+	@GetMapping("/categoria")
+	public ResponseEntity<?> listarCategorias(){
+		return ResponseEntity.ok().body(service.obtenerCategorias());
+	}
+	
+	@GetMapping("/categoria/ver/{categoriaId}")
+	public ResponseEntity<?> categoriaId(@PathVariable Long categoriaId) {
+	    try {
+	        Categoria categoriaDTO = service.obtenerCategoriaPorId(categoriaId);
+	        return ResponseEntity.ok(categoriaDTO);
+	    } catch (RuntimeException e) {
+	        return ResponseEntity.status(404).body(e.getMessage());
+	    }
+	}
+	
+	@GetMapping("/proveedor/ver/{proveedorId}")
+	public ResponseEntity<?> proveedorId(@PathVariable Long proveedorId) {
+	    try {
+	        Proveedor proveedorDTO = service.obtenerProveedoraPorId(proveedorId);
+	        return ResponseEntity.ok(proveedorDTO);
+	    } catch (RuntimeException e) {
+	        return ResponseEntity.status(404).body(e.getMessage());
+	    }
+	}
+	
+	protected ResponseEntity<?> validar(BindingResult result){
+		Map<String, Object> errores = new HashMap<>();
+		result.getFieldErrors().forEach(err -> {
+			errores.put(err.getField() , "El campo " + err.getField() + " " +  err.getDefaultMessage());
+		});
+		
+		return ResponseEntity.badRequest().body(errores);
+	}
+
+}

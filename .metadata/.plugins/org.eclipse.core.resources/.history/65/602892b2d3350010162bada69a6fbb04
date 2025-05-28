@@ -1,0 +1,52 @@
+package com.example.microservicio_movimiento.models;
+
+import java.time.LocalDateTime;
+import java.util.Date;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Entity
+@Table(name = "movimientos")
+public class MovimientoInventario {
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
+	private Long productoId;
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date fecha;
+	@NotEmpty
+	@NotNull
+	private int cantidad;
+	@NotEmpty
+	@NotNull
+	@Pattern(regexp = "ENTRADA|SALIDA", message = "El tipo de movimiento debe ser 'ENTRADA' o 'SALIDA'")
+	private String tipoMovimiento;
+	@NotEmpty
+	@NotNull
+	@Size(max = 255, message = "La descripción no puede exceder los 255 caracteres.")
+	private String descripcion;
+	
+	@PrePersist
+	public void prePersist() {
+		this.fecha = new Date();
+	}
+}

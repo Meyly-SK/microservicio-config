@@ -1,0 +1,11 @@
+package com.example.microservicio_venta.models;
+
+@
+public class DetalleVenta {
+
+	private Long id;
+	private Venta venta;
+	private Producto producto;
+	private Integer cantidad;
+	private double subTotal;
+}

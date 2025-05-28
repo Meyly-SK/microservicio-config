@@ -1,0 +1,9 @@
+package com.example.microservicio_cliente.controller;
+
+import com.example.commons.controller.CommonController;
+import com.example.microservicio_cliente.models.Cliente;
+import com.example.microservicio_cliente.service.ClienteService;
+
+public class ClienteController extends CommonController<Cliente, ClienteService>{
+
+}

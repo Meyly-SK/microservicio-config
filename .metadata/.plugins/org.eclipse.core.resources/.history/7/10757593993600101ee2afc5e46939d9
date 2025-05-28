@@ -1,0 +1,29 @@
+package com.example.microservicio_compra.models;
+
+import java.math.BigDecimal;
+import java.util.UUID;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "detalleCompra")
+public class DetalleCompra {
+
+	@Id
+	private UUID id;
+	
+	@ManyToOne
+	private Compra compra;
+	
+	@ManyToOne
+	private Producto producto;
+	
+	private Integer cantidad;
+	
+	private BigDecimal subTotal;
+	
+	
+}

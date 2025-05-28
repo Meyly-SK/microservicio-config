@@ -1,0 +1,12 @@
+package com.example.microservicio_compra.service;
+
+import org.springframework.web.bind.annotation.RequestBody;
+
+import com.example.commons.service.CommonService;
+import com.example.microservicio_compra.models.DetalleCompra;
+import com.example.microservicio_compra.models.MovimientoInventario;
+
+public interface DetalleCompraService extends CommonService<DetalleCompra>{
+
+	public MovimientoInventario guardarInventario (MovimientoInventario movimiento);
+}

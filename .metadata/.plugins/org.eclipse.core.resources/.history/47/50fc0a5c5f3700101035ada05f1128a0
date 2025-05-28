@@ -1,0 +1,18 @@
+package com.example.microservicio_venta.service;
+
+import org.springframework.stereotype.Service;
+
+import com.example.commons.service.CommonServiceImpl;
+import com.example.microservicio_venta.models.Venta;
+import com.example.microservicio_venta.repository.VentaRepository;
+
+@Service
+public class VentaServiceImpl extends CommonServiceImpl<Venta, VentaRepository> implements VentaService{
+
+	@Override
+	public byte[] generarPdfVenta(Venta venta) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+}
