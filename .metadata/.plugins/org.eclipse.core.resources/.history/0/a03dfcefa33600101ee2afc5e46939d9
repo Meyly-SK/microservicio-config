@@ -1,9 +1,0 @@
-package com.example.microservicio_compra.service;
-
-import com.example.commons.service.CommonServiceImpl;
-import com.example.microservicio_compra.models.Compra;
-import com.example.microservicio_compra.repository.CompraRepository;
-
-public class CompraServiceImpl extends CommonServiceImpl<Compra, CompraRepository>{
-
-}

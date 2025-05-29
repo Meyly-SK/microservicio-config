@@ -1,9 +1,0 @@
-package com.example.webflux.repository;
-
-import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
-
-import com.example.webflux.documents.Producto;
-
-public interface ProductoRepository extends ReactiveMongoRepository<Producto, Long>{
-
-}

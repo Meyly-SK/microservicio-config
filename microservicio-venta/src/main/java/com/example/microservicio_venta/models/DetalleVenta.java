@@ -11,6 +11,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -31,10 +33,13 @@ public class DetalleVenta {
 	@JsonBackReference
 	private Venta venta;
 	
+	@NotNull(message = "Debe especificar un producto")
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "producto_id")
 	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 	private Producto producto;
+	@NotNull(message = "La cantidad es obligatorio")
+	@Positive(message = "La cantidad debe ser mayor que cero")
 	private Integer cantidad;
 	private double subTotal;
 }

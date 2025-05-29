@@ -1,8 +1,0 @@
-package com.example.webflux.documents;
-
-import org.springframework.data.mongodb.core.mapping.Document;
-
-@Document(collection = "productos")
-public class Producto {
-
-}

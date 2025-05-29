@@ -1,7 +1,0 @@
-package com.example.microservicio_compra.repository;
-
-import org.springframework.data.repository.CrudRepository;
-
-public interface CompraDetalleRepository extends CrudRepository<T, ID>{
-
-}

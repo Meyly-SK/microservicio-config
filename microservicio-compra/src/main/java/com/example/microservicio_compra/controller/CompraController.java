@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,6 +26,7 @@ import com.example.microservicio_compra.models.Producto;
 import com.example.microservicio_compra.service.CompraService;
 import com.example.microservicio_compra.service.DetalleCompraService;
 
+import jakarta.validation.Valid;
 import jakarta.ws.rs.InternalServerErrorException;
 import jakarta.ws.rs.core.HttpHeaders;
 
@@ -35,8 +37,12 @@ public class CompraController extends CommonController<Compra, CompraService>{
 	private DetalleCompraService detalleCompraService;
 	
 	@PostMapping("/nuevo")
-	public ResponseEntity<?> nuevaCompra(@RequestBody Compra compraRequest) {
-	    try {
+	public ResponseEntity<?> nuevaCompra(@Valid @RequestBody Compra compraRequest, BindingResult result) {
+	    
+		if(result.hasErrors()) {
+			return this.validar(result);
+		}
+		try {
 	        
 	        if(compraRequest.getProveedor() == null) {
 	        	throw new BadRequestException("El proveedor es obligatorio");
@@ -111,7 +117,7 @@ public class CompraController extends CommonController<Compra, CompraService>{
 		try {
 			pdf = service.generarPdfCompra(compra);
 		}catch(Exception e) {
-			throw new InternalServerErrorException("Errpr añ gemerar el PDF de la compra con ID " + id + " : " + e.getMessage());
+			throw new InternalServerErrorException("Error al generar el PDF de la compra con ID " + id + " : " + e.getMessage());
 		}
 		
 		

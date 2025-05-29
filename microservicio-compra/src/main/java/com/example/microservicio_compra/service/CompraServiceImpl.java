@@ -12,6 +12,7 @@ import com.example.microservicio_compra.models.Producto;
 import com.example.microservicio_compra.models.Proveedor;
 import com.example.microservicio_compra.repository.CompraRepository;
 import com.lowagie.text.Document;
+import com.lowagie.text.Element;
 import com.lowagie.text.Font;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.PdfPTable;
@@ -31,7 +32,8 @@ public class CompraServiceImpl extends CommonServiceImpl<Compra, CompraRepositor
 		document.open();
 		
 		Font tituloFont = new Font(Font.HELVETICA, 18, Font.BOLD);
-		Paragraph titulo = new Paragraph("Factura de Venta", tituloFont);
+		Paragraph titulo = new Paragraph("Factura de Compra", tituloFont);
+		titulo.setAlignment(Element.ALIGN_CENTER);
 		document.add(titulo);
 		document.add(new Paragraph(" "));
 		

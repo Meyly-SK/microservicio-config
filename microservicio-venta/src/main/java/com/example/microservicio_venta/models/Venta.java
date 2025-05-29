@@ -16,7 +16,11 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -33,13 +37,17 @@ public class Venta {
 	private Long id;
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date fecha;
-	@Pattern(regexp = "PENDIENTE|RECIBIDO|CANCELADO", message = "Estado inválido")
+	
+	@NotBlank(message = "El estado no puede estar vacion")
+	@Pattern(regexp = "PENDIENTE|RECIBIDO|CANCELADO", message = "Estado inválido. Debe ser PENDIENTE, RECIBIDO o CANCELADO")
 	private String estado;
+	@NotNull(message = "El cliente es obligatorio")
 	@ManyToOne
 	private Cliente cliente;
 	
+	@PositiveOrZero(message = "El total no puede negativo")
 	private double total;
-	
+	@NotEmpty(message = "Debe incluir al menos un detalle de venta")
 	@OneToMany(mappedBy = "venta", cascade = CascadeType.ALL)
 	@JsonManagedReference
 	private List<DetalleVenta> detalles;
