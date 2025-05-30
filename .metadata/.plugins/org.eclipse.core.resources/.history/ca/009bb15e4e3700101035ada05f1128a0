@@ -1,8 +1,0 @@
-package com.example.microservicio_venta.service;
-
-import com.example.commons.service.CommonService;
-import com.example.microservicio_venta.models.DetalleVenta;
-
-public interface DetalleVentaService extends CommonService<DetalleVenta>{
-
-}

@@ -1,5 +1,0 @@
-package com.example.microservicio_compra.clients;
-
-public interface ProductoFeignClient {
-
-}

@@ -1,5 +1,0 @@
-package com.example.microservicio_cliente.service;
-
-public interface ClienteService {
-
-}

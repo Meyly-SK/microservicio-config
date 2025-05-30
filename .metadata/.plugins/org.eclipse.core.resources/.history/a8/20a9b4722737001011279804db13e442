@@ -1,8 +1,0 @@
-package com.example.microservicio_venta.models;
-
-@
-public class DetalleVenta {
-
-	private Long id;
-	private Venta venta;
-}
