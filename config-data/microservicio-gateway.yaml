@@ -1,0 +1,83 @@
+server:
+  port: 8090
+eureka:
+  client:
+    fetch-registry: true
+    registrer-with-eureka: true
+    service-url:
+      default-zone: http://localhost:8761/eureka
+spring:
+  application:
+    name: microservicio-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: microservicio-usuarios
+          uri: lb://microservicio-usuarios
+          predicates:
+            - Path=/api/alumnos/**
+          filters:
+            - StripPrefix=2
+
+        - id: microservicio-curso
+          uri: lb://microservicio-curso
+          predicates:
+            - Path=/api/cursos/**
+          filters:
+            - StripPrefix=2
+
+        - id: microservicio-examen
+          uri: lb://microservicio-examen
+          predicates:
+            - Path=/api/examenes/**
+          filters:
+            - StripPrefix=2
+
+        - id: microservicio-proveedor
+          uri: lb://microservicio-proveedor
+          predicates:
+            - Path=/api/proveedores/**
+          filters:
+            - StripPrefix=2
+
+        - id: microservicio-categoria
+          uri: lb://microservicio-categoria
+          predicates:
+            - Path=/api/categorias/**
+          filters:
+            - StripPrefix=2
+
+        - id: microservicio-movimiento
+          uri: lb://microservicio-movimiento
+          predicates:
+            - Path=/api/movimientos/**
+          filters:
+            - StripPrefix=2
+
+        - id: microservicio-producto
+          uri: lb://microservicio-producto
+          predicates:
+            - Path=/api/productos/**
+          filters:
+            - StripPrefix=2
+
+        - id: microservicio-compra
+          uri: lb://microservicio-compra
+          predicates:
+            - Path=/api/compras/**
+          filters:
+            - StripPrefix=2
+
+        - id: microservicio-cliente
+          uri: lb://microservicio-cliente
+          predicates:
+            - Path=/api/clientes/**
+          filters:
+            - StripPrefix=2
+
+        - id: microservicio-venta
+          uri: lb://microservicio-venta
+          predicates:
+            - Path=/api/ventas/**
+          filters:
+            - StripPrefix=2
